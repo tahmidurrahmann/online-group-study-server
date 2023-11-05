@@ -1,12 +1,15 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express();
 const port = process.env.PORT || 5010;
 
 
-app.use(cors())
+app.use(cors({
+    origin : ["http://localhost:5173"],
+    credentials : true,
+}))
 app.use(express.json())
 
 
@@ -28,7 +31,53 @@ async function run() {
 
         const assignmentsCollection = client.db('onlineGroupStudy').collection('assignments');
 
-        
+        app.post('/create-assignment', async (req, res) => {
+            const body = req.body;
+            const result = await assignmentsCollection.insertOne(body);
+            res.send(result);
+        })
+
+        app.get('/create-assignment', async (req, res) =>{
+            const result = await assignmentsCollection.find().toArray();
+            res.send(result);
+        })
+
+        app.get('/create-assignment/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {_id : new ObjectId(id)};
+            const result = await assignmentsCollection.findOne(query);
+            res.send(result);
+        })
+
+        app.delete('/create-assignment/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {_id : new ObjectId(id)};
+            const findOne = await assignmentsCollection.findOne(query);
+            const body = req.body;
+            const findEmail = findOne.email;
+            const userEmail = body?.email;
+            if(findEmail === userEmail){
+                const result = await assignmentsCollection.deleteOne(query);
+                res.send(result);
+            }
+            else{
+                res.send({message : "You cannot delete this assignment"})
+            }
+        } )
+
+        app.put('/create-assignment/:id', async (req, res) => {
+            const body = req.body;
+            const id = req.params.id;
+            const filter = {_id : new ObjectId(id)};
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                  ...body
+                },
+              };
+              const result = await assignmentsCollection.updateOne(filter, updateDoc, options);
+              res.send(result);
+        })
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
