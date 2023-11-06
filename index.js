@@ -38,8 +38,33 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/take-assignment', async (req,res) => {
-            const result = await takeAssignmentsCollection.find().toArray();
+        app.get('/take-assignment/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await takeAssignmentsCollection.findOne(query);
+            res.send(result);
+        })
+
+        app.patch('/take-assignment/:id', async (req, res) => {
+            const id = req.params.id;
+            const body = req.body;
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    ...body
+                },
+            };
+            const result = await takeAssignmentsCollection.updateOne(filter, updateDoc);
+            res.send(result);
+            console.log(result);
+        })
+
+        app.get('/take-assignment', async (req, res) => {
+            let query = {};
+            if(req?.query?.userEmail){
+                query = {userEmail :  req.query.userEmail}
+            }
+            const result = await takeAssignmentsCollection.find(query).toArray();
             res.send(result);
         })
 
