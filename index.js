@@ -13,7 +13,21 @@ app.use(cors({
     credentials: true,
 }))
 app.use(express.json())
-app.use(cookieParser)
+app.use(cookieParser());
+
+const verifyToken = async (req, res, next) => {
+    const token = req?.cookies?.token;
+    if (!token) {
+        return res.status(401).send({ message: "unauthorized access" })
+    }
+    jwt.verify(token, process.env.DB_ACCESS_TOKEN, (err, decoded) => {
+        if (err) {
+            return res.status(401).send({ message: "unauthorized access" })
+        }
+        req.user = decoded;
+        next()
+    })
+}
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.glcj3l3.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -34,16 +48,16 @@ async function run() {
         const assignmentsCollection = client.db('onlineGroupStudy').collection('assignments');
         const takeAssignmentsCollection = client.db("onlineGroupStudy").collection('takeAssignments');
 
-        app.post('/access-token',(req, res) => {
+        app.post('/access-token', (req, res) => {
             const body = req.body;
-            const token = jwt.sign(body,process.env.DB_ACCESS_TOKEN,{expiresIn : "1h"});
+            const token = jwt.sign(body, process.env.DB_ACCESS_TOKEN, { expiresIn: "24h" });
             res
-            .cookie("token",token,{
-                httpOnly : true,
-                secure : true,
-                sameSite : "none"
-            })
-            .send({success : true});
+                .cookie("token", token, {
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: "none"
+                })
+                .send({ success: true });
         })
 
         app.get('/assignmentCount', async (req, res) => {
@@ -77,7 +91,11 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/take-assignment', async (req, res) => {
+        app.get('/take-assignment',verifyToken, async (req, res) => {
+            console.log("token",req?.user,req?.query?.userEmail );
+            // if(req?.query?.userEmail !== req?.user?.email){
+            //     res.status(403).send({message : "forbidden access"})
+            // }
             let query = {};
             if (req?.query?.userEmail) {
                 query = { userEmail: req.query.userEmail }
