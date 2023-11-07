@@ -3,7 +3,9 @@ const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express();
+const jwt = require('jsonwebtoken');
 const port = process.env.PORT || 5010;
+const cookieParser = require('cookie-parser');
 
 
 app.use(cors({
@@ -11,7 +13,7 @@ app.use(cors({
     credentials: true,
 }))
 app.use(express.json())
-
+app.use(cookieParser())
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.glcj3l3.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -31,6 +33,18 @@ async function run() {
 
         const assignmentsCollection = client.db('onlineGroupStudy').collection('assignments');
         const takeAssignmentsCollection = client.db("onlineGroupStudy").collection('takeAssignments');
+
+        app.post('/access-token',(req, res) => {
+            const body = req.body;
+            const token = jwt.sign(body,process.env.DB_ACCESS_TOKEN,{expiresIn : "1h"});
+            res
+            .cookie("token",token,{
+                httpOnly : true,
+                secure : true,
+                sameSite : "none"
+            })
+            .send({success : true});
+        })
 
         app.get('/assignmentCount', async (req, res) => {
             const count = await assignmentsCollection.estimatedDocumentCount();
