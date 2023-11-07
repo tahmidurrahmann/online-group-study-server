@@ -32,6 +32,11 @@ async function run() {
         const assignmentsCollection = client.db('onlineGroupStudy').collection('assignments');
         const takeAssignmentsCollection = client.db("onlineGroupStudy").collection('takeAssignments');
 
+        app.get('/assignmentCount', async (req, res) => {
+            const count = await assignmentsCollection.estimatedDocumentCount();
+            res.send({ count })
+        })
+
         app.post('/take-assignment', async (req, res) => {
             const body = req.body;
             const result = await takeAssignmentsCollection.insertOne(body);
@@ -56,13 +61,12 @@ async function run() {
             };
             const result = await takeAssignmentsCollection.updateOne(filter, updateDoc);
             res.send(result);
-            console.log(result);
         })
 
         app.get('/take-assignment', async (req, res) => {
             let query = {};
-            if(req?.query?.userEmail){
-                query = {userEmail :  req.query.userEmail}
+            if (req?.query?.userEmail) {
+                query = { userEmail: req.query.userEmail }
             }
             const result = await takeAssignmentsCollection.find(query).toArray();
             res.send(result);
@@ -75,7 +79,9 @@ async function run() {
         })
 
         app.get('/create-assignment', async (req, res) => {
-            const result = await assignmentsCollection.find().toArray();
+            const page = parseInt(req.query.page);
+            const items = parseInt(req.query.items);
+            const result = await assignmentsCollection.find({}).skip(page * items).limit(items).toArray();
             res.send(result);
         })
 
