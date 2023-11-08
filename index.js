@@ -9,7 +9,7 @@ const cookieParser = require('cookie-parser');
 
 
 app.use(cors({
-    origin: ["https://online-group-study-client.web.app"],
+    origin: ["https://online-group-study-client.web.app","http://localhost:5173"],
     credentials: true,
 }))
 app.use(express.json())
@@ -92,7 +92,7 @@ async function run() {
         })
 
         app.get('/take-assignment', verifyToken , async (req, res) => {
-            // console.log("token",req?.user,req?.query );
+            console.log("token",req?.user,req?.query );
             // if(req?.query?.userEmail !== req?.user?.email){
             //     res.status(403).send({message : "forbidden access"})
             // }
@@ -117,7 +117,7 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/create-assignment/:id', async (req, res) => {
+        app.get('/create-assignment/:id', verifyToken, async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await assignmentsCollection.findOne(query);
@@ -140,7 +140,7 @@ async function run() {
             }
         })
 
-        app.put('/create-assignment/:id', async (req, res) => {
+        app.put('/create-assignment/:id',verifyToken, async (req, res) => {
             const body = req.body;
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
