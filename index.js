@@ -9,7 +9,7 @@ const cookieParser = require('cookie-parser');
 
 
 app.use(cors({
-    origin: ["http://localhost:5173"],
+    origin: ["https://online-group-study-client.web.app"],
     credentials: true,
 }))
 app.use(express.json())
@@ -43,7 +43,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
 
         const assignmentsCollection = client.db('onlineGroupStudy').collection('assignments');
         const takeAssignmentsCollection = client.db("onlineGroupStudy").collection('takeAssignments');
@@ -91,8 +91,8 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/take-assignment',verifyToken, async (req, res) => {
-            console.log("token",req?.user,req?.query?.userEmail );
+        app.get('/take-assignment', verifyToken , async (req, res) => {
+            // console.log("token",req?.user,req?.query );
             // if(req?.query?.userEmail !== req?.user?.email){
             //     res.status(403).send({message : "forbidden access"})
             // }
