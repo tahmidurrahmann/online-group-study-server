@@ -9,7 +9,7 @@ const cookieParser = require('cookie-parser');
 
 
 app.use(cors({
-    origin: ["https://online-group-study-client.web.app","http://localhost:5173"],
+    origin: ["https://online-group-study-client.web.app"],
     credentials: true,
 }))
 app.use(express.json())
