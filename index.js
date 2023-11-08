@@ -140,7 +140,7 @@ async function run() {
             }
         })
 
-        app.put('/create-assignment/:id', verifyToken, async (req, res) => {
+        app.put('/create-assignment/:id',verifyToken, async (req, res) => {
             const body = req.body;
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
